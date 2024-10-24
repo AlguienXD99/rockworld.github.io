@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego 3D Básico</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl');
+
+        // Verificar si WebGL es compatible
+        if (!gl) {
+            console.log('No se pudo inicializar WebGL. Tu navegador puede no soportar esta función.');
+            gl = canvas.getContext('experimental-webgl');
+        }
+
+        // Definir un shader simple
+        const vsSource = `
+            attribute vec4 aVertexPosition;
+            void main(void) {
+                gl_Position = aVertexPosition;
+            }
+        `;
+        
+        const fsSource = `
+            void main(void) {
+                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Color rojo
+            }
+        `;
+
+        // Función para crear un shader
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+        }
+
+        // Crear y enlazar shaders
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+        const shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+        gl.useProgram(shaderProgram);
+
+        // Definir los vértices de un cuadrado
+        const vertices = new Float32Array([
+            -0.5, -0.5,
+             0.5, -0.5,
+            -0.5,  0.5,
+             0.5,  0.5,
+        ]);
+
+        // Crear un buffer y enlazar los vértices
+        const vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        const position = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(position);
+
+        // Función para dibujar el cuadrado
+        function drawScene() {
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+
+        // Llamar a la función de dibujar
+        drawScene();
+    </script>
+</body>
+</html>
